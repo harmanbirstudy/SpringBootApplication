@@ -1,0 +1,19 @@
+{
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "cartid",
+      "AttributeType": "S"
+    }
+  ],
+  "TableName": "shoppingcart",
+  "KeySchema": [
+    {
+      "AttributeName": "cartid",
+      "KeyType": "HASH"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 100,
+    "WriteCapacityUnits": 100
+  }
+}

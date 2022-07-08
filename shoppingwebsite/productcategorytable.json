@@ -1,0 +1,19 @@
+{
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "type",
+      "AttributeType": "S"
+    }
+  ],
+  "TableName": "productcategory",
+  "KeySchema": [
+    {
+      "AttributeName": "type",
+      "KeyType": "HASH"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 100,
+    "WriteCapacityUnits": 100
+  }
+}

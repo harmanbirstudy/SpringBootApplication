@@ -1,0 +1,41 @@
+{
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "productid",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "title",
+      "AttributeType": "S"
+    }
+  ],
+  "TableName": "products",
+  "KeySchema": [
+    {
+      "AttributeName": "title",
+      "KeyType": "HASH"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 100,
+    "WriteCapacityUnits": 100
+  },
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "product_id",
+      "KeySchema": [
+        {
+          "AttributeName": "productid",
+          "KeyType": "HASH"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 100,
+        "WriteCapacityUnits": 100
+      }
+    }
+  ]
+}
