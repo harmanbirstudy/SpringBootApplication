@@ -6,8 +6,8 @@ spring:
       client:
         registration:
           google:
-            clientId: 980366062649-8oci5ie2hsctkdmgubac4k1msh2nsqbg.apps.googleusercontent.com
-            clientSecret: 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
+            clientId: 
+            clientSecret: 
             redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope:
               - email
@@ -16,11 +16,11 @@ amazon:
   dynamodb:
     endpoint: http://localhost:8000/
   aws:
-    accesskey: AKIAWRAUXZ4G434QYNQX
-    secretkey: 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
+    accesskey: 
+    secretkey: 
 app:
   auth:
-    tokenSecret: 04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
+    tokenSecret: 
     tokenExpirationMsec: 864000000
   cors:
     allowedOrigins: http://localhost:4200 # Comma separated list of allowed origins
