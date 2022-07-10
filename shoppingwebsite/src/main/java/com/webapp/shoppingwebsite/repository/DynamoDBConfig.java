@@ -1,25 +1,5 @@
 package com.webapp.shoppingwebsite.repository;
 
-//dynamodb run command
-//docker run -p 8000:8000 -v $(pwd)/local/dynamodb:/data/ amazon/dynamodb-local -jar DynamoDBLocal.jar -sharedDb -dbPath /data
-//alias aws='docker run --rm -ti -v ~/.aws:/root/.aws -v $(pwd):/aws amazon/aws-cli'
-//aws configure .. press emter empty values
-//docker ps
-//docker inspect "container id of running dynamdo db"
-//get IP address and then use in below command while running every dynamodb command
-//docker ps and then docker inspect "container id"
-//aws dynamodb list-tables --endpoint-url http://172.17.0.2:8000
-//alias awsddb='docker run --rm -ti -v ~/.aws:/root/.aws -v $(pwd):/aws amazon/aws-cli dynamodb --endpoint-url http://172.17.0.2:8000'
-//awsddb list-tables
-//awsddb create-table --cli-input-json file://HarmanData/AWS_Materials/ShoppingWebsite/SpringBootApp/shoppingwebsite/usertable.json
-//awsddb delete-table --table-name users
-//GUI
-////NoSqlWorkbench
-//aws configure check if saved last time
-//accesskeyid--AKIAWRAUXZ4G434QYNQX
-//secretkey -- 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
-//User--HarmanbirSinghRai
-//email--	kaur262610@gmail.com
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
