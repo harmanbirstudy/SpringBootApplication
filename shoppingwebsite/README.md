@@ -133,19 +133,6 @@ Logins (all users with provider `local`):
 - Admin: `admin@shoppingwebsite.com` / `password123` (`ROLE_ADMIN`)
 - Any seeded local user, e.g. from `SELECT email FROM users WHERE provider = 'local'` / `password123`
 
-### Regenerating seed data
-
-`scripts/seed.sql` holds the DDL (hand-written, mirrors the JPA entities in
-`src/main/java/com/webapp/shoppingwebsite/dao`) followed by an auto-generated data block.
-To change the data, edit `scripts/generate_seed.py` and run:
-
-```bash
-python3 scripts/generate_seed.py          # rewrites the data block in scripts/seed.sql
-python3 scripts/generate_seed.py --print  # print SQL to stdout only
-```
-
-The output is deterministic (fixed random seed), so re-running produces an identical file.
-
 ### Querying
 
 ```bash
