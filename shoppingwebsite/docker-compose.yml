@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: shoppingwebsite-postgres
+    environment:
+      POSTGRES_DB: shoppingwebsite
+      POSTGRES_USER: shopping
+      POSTGRES_PASSWORD: shopping
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopping -d shoppingwebsite"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # Runs scripts/seed.sql and exits — only when started with the "seed" profile:
+  #   docker compose --profile seed up -d
+  # seed.sql is idempotent (CREATE TABLE IF NOT EXISTS + ON CONFLICT DO NOTHING),
+  # so re-running only fills in missing seed rows and never touches other data.
+  seed:
+    image: postgres:16
+    container_name: shoppingwebsite-seed
+    profiles: ["seed"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: shopping
+    volumes:
+      - ./scripts/seed.sql:/seed.sql:ro
+    command: ["psql", "-h", "postgres", "-U", "shopping", "-d", "shoppingwebsite", "-q", "-f", "/seed.sql"]
+    restart: "no"
+
+volumes:
+  pgdata:
