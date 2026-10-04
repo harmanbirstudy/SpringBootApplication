@@ -64,10 +64,48 @@ In IntelliJ, set the same variables in **Run → Edit Configurations → Environ
 Or, for local use only, fill in `clientId` / `clientSecret` in `application.yml` and
 don't commit that change.
 
-> `app.auth.tokenSecret` in `application.yml` is also empty. It's the key used to sign
-> the app's JWT login tokens, so set it to a long random string (for example the output of
-> `openssl rand -base64 64`) or logins will fail when a token is issued. You can pass it
-> as the `APP_AUTH_TOKENSECRET` environment variable.
+### JWT token secret (required)
+
+`app.auth.tokenSecret` in `application.yml` is also empty. It's the key `TokenProvider`
+uses to sign the app's JWT login tokens. If it's empty, the app still starts, but every
+login fails when a token is issued, with `java.lang.IllegalArgumentException: Empty key`.
+
+It can be any random value, as long as it meets two rules:
+
+1. **It must be base64.** `TokenProvider` base64-decodes it before using it as the key.
+   Characters that aren't base64 (like `-` or `!`) are silently dropped, so the key ends up
+   shorter than the string you typed.
+2. **It must decode to at least 32 bytes (256 bits).** jjwt 0.11.2 rejects shorter keys for
+   HS256 with a `WeakKeyException`. In practice, that's a base64 string of about 43+ characters.
+
+| Value                                 | Works? | Why                                       |
+|---------------------------------------|--------|-------------------------------------------|
+| *(empty)*                             | No     | `IllegalArgumentException: Empty key`     |
+| `mysecret`                            | No     | Decodes to 6 bytes, so too short (`WeakKeyException`) |
+| `my-super-secret-password`            | No     | ~16 bytes once `-` is dropped, so too short |
+| Output of `openssl rand -base64 32`   | Yes    | Exactly 32 random bytes, valid base64     |
+
+The easiest option is to generate one:
+
+```bash
+openssl rand -base64 32
+```
+
+Use `32`, not `64`. openssl splits longer output across two lines, which makes it easy to
+paste only half of the value.
+
+Then pass it as an environment variable (or set `tokenSecret` locally, without committing it):
+
+```bash
+export APP_AUTH_TOKENSECRET=<output-of-openssl>
+```
+
+Notes:
+- The same secret is used to sign tokens and to check them on later requests. If you change
+  it, tokens already issued stop working and users must log in again.
+- For local testing it doesn't matter much if the value leaks. In any shared or deployed
+  environment, keep it secret like a password, because anyone who has it can create valid
+  login tokens for any user.
 
 ## Local database
 
