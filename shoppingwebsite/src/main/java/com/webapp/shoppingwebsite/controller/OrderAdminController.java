@@ -13,6 +13,8 @@ import com.webapp.shoppingwebsite.security.CurrentUser;
 import com.webapp.shoppingwebsite.security.UserPrincipal;
 import net.minidev.json.JSONObject;
 import org.apache.tomcat.util.json.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +31,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/services/orders")
 public class OrderAdminController implements SecuredRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderAdminController.class);
 
     @Autowired
     private OrdersRepository ordersrepo;
@@ -49,6 +53,7 @@ public class OrderAdminController implements SecuredRestController {
         Orders order =new Orders();
         List<OrderProducts> orderproductslist=new ArrayList<>();
         Products product ;
+        logger.info("Creating order for userid: {} from cartid: {}", userPrincipal.getUserid(), ordersrequest.getCartid());
         order.setUserid(userPrincipal.getUserid());
         order.setName(ordersrequest.getName());
         order.setAddline1(ordersrequest.getAddline1());
@@ -75,14 +80,19 @@ public class OrderAdminController implements SecuredRestController {
                         orprod.setImageurl(product.getImageurl());
                         orderproductslist.add(orprod);
                        // Products result = products.save(product);
+                    } else {
+                        logger.warn("Product {} in cart {} not found, skipping it in the order", next.getKey(), ordersrequest.getCartid());
                     }
 
                 }
              order.setProducts(orderproductslist);
+            } else {
+                logger.warn("Cart not found for cartid: {}, creating order without products", ordersrequest.getCartid());
             }
 
         }
         Orders result=ordersrepo.save(order);
+        logger.info("Order {} created for userid: {} with {} product(s)", result.getOrderid(), userPrincipal.getUserid(), orderproductslist.size());
         OrderIdResponse resp=new OrderIdResponse();
         resp.setOrderid(result.getOrderid());
         return  resp;
@@ -91,6 +101,7 @@ public class OrderAdminController implements SecuredRestController {
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/getorderdetails/{orderid}")
     public Orders getOrderDetails(@PathVariable("orderid") String orderid){
+        logger.debug("Fetching order details for orderid: {}", orderid);
         if (!orderid.isBlank()) {
             Optional<Orders> cartOptional = ordersrepo.findByOrderid(orderid);
             if (cartOptional.isPresent()) {
@@ -98,6 +109,7 @@ public class OrderAdminController implements SecuredRestController {
                 return result;
             }
         }
+        logger.warn("Order not found for orderid: {}", orderid);
         return null;
 
     }
@@ -105,6 +117,7 @@ public class OrderAdminController implements SecuredRestController {
     @GetMapping("/getalluserorders")
     public List<OrderUserIdResponse> getOrdersByUser( @CurrentUser UserPrincipal userPrincipal)  {
         List<Orders> orders = ordersrepo.findByUserid(userPrincipal.getUserid());
+        logger.debug("Found {} order(s) for userid: {}", orders.size(), userPrincipal.getUserid());
         List<OrderUserIdResponse> result = new ArrayList<>();
         //Initializing the date formatter
        // SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss", Locale.ENGLISH);
@@ -129,6 +142,7 @@ public class OrderAdminController implements SecuredRestController {
         List<AllOrdersResponse> result = new ArrayList<AllOrdersResponse>();
         List<Orders> allorders = new ArrayList<Orders>();
         ordersrepo.findAll().forEach(allorders::add);
+        logger.debug("Admin fetching all orders, total: {}", allorders.size());
         if(allorders.size()>0) {
             for (Orders order : allorders) {
                 Optional<User> user = userRepository.findByUserid(order.getUserid());
@@ -138,6 +152,8 @@ public class OrderAdminController implements SecuredRestController {
                     userorder.setOrderid(order.getOrderid());
                     userorder.setOrderdate(order.getOrderdate());
                     result.add(userorder);
+                } else {
+                    logger.warn("User {} not found for order {}", order.getUserid(), order.getOrderid());
                 }
             }
             result.sort(Comparator.comparing(AllOrdersResponse::getOrderdate));

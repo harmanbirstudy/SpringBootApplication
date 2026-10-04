@@ -1,8 +1,11 @@
 package com.webapp.shoppingwebsite.config;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +25,8 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebMvcConfig.class);
+
     private final long MAX_AGE_SECS = 3600;
 
     @Value("${app.cors.allowedOrigins}")
@@ -29,6 +34,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        logger.info("Configuring CORS for allowed origins: {}", Arrays.toString(allowedOrigins));
         registry.addMapping("/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")

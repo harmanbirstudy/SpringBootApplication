@@ -4,6 +4,8 @@ import com.webapp.shoppingwebsite.config.AppProperties;
 import com.webapp.shoppingwebsite.exception.BadRequestException;
 import com.webapp.shoppingwebsite.security.TokenProvider;
 import com.webapp.shoppingwebsite.util.CookieUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -21,6 +23,8 @@ import static com.webapp.shoppingwebsite.security.oauth2.HttpCookieOAuth2Authori
 
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2AuthenticationSuccessHandler.class);
 
     private TokenProvider tokenProvider;
 
@@ -42,11 +46,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String targetUrl = determineTargetUrl(request, response, authentication);
 
         if (response.isCommitted()) {
-            logger.debug("Response has already been committed. Unable to redirect to " + targetUrl);
+            logger.warn("Response has already been committed. Unable to redirect after OAuth2 login");
             return;
         }
 
         clearAuthenticationAttributes(request, response);
+        logger.info("OAuth2 login successful, redirecting to client");
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
