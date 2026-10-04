@@ -1,12 +1,13 @@
 package com.webapp.shoppingwebsite.dao;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-@DynamoDBTable(tableName = "productcategory")
+@Entity
+@Table(name = "productcategory")
 public class ProductCategory {
-    @DynamoDBHashKey(attributeName = "type")
     public String getType() {
         return type;
     }
@@ -14,7 +15,7 @@ public class ProductCategory {
     public void setType(String type) {
         this.type = type;
     }
-    @DynamoDBAttribute(attributeName = "name")
+
     public String getName() {
         return name;
     }
@@ -23,6 +24,10 @@ public class ProductCategory {
         this.name = name;
     }
 
+    @Id
+    @Column(name = "type")
     private String type;
+
+    @Column(name = "name")
     private String name;
 }

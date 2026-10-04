@@ -104,26 +104,21 @@ public class OrderAdminController implements SecuredRestController {
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/getalluserorders")
     public List<OrderUserIdResponse> getOrdersByUser( @CurrentUser UserPrincipal userPrincipal)  {
-        Optional<List<Orders>> ordersOptional = ordersrepo.findByUserid(userPrincipal.getUserid());
-        if (ordersOptional.isPresent()) {
-            List<OrderUserIdResponse> result = new ArrayList<>();
-            List<Orders> orders=ordersOptional.get();
-            //Initializing the date formatter
-           // SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss", Locale.ENGLISH);
-            if(orders.size()>0) {
-                for (Orders order : orders) {
-                    OrderUserIdResponse newresp = new OrderUserIdResponse();
-                    newresp.setOrderid(order.getOrderid());
-                  //  newresp.setOrderdate(formatter.parse(formatter.format(order.getOrderdate())));
-                    newresp.setOrderdate(order.getOrderdate());
-                    result.add(newresp);
-                }
-
-                result.sort(Comparator.comparing(OrderUserIdResponse::getOrderdate));
-                return result;
-            }else {
-                return null;
+        List<Orders> orders = ordersrepo.findByUserid(userPrincipal.getUserid());
+        List<OrderUserIdResponse> result = new ArrayList<>();
+        //Initializing the date formatter
+       // SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss", Locale.ENGLISH);
+        if(orders.size()>0) {
+            for (Orders order : orders) {
+                OrderUserIdResponse newresp = new OrderUserIdResponse();
+                newresp.setOrderid(order.getOrderid());
+              //  newresp.setOrderdate(formatter.parse(formatter.format(order.getOrderdate())));
+                newresp.setOrderdate(order.getOrderdate());
+                result.add(newresp);
             }
+
+            result.sort(Comparator.comparing(OrderUserIdResponse::getOrderdate));
+            return result;
         }
         return null;
     }

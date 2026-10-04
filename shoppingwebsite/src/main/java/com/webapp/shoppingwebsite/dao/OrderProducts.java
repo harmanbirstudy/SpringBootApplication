@@ -1,16 +1,22 @@
 package com.webapp.shoppingwebsite.dao;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-@DynamoDBDocument
+@Embeddable
 public class OrderProducts {
+    @Column(name = "title")
     private String title;
+
+    @Column(name = "price")
     private String price;
+
+    @Column(name = "imageurl")
     private String imageurl;
+
+    @Column(name = "quantity")
     private int quantity;
 
-    @DynamoDBAttribute(attributeName = "quantity")
     public int getQuantity() {
         return quantity;
     }
@@ -21,7 +27,6 @@ public class OrderProducts {
 
 
 
-    @DynamoDBAttribute(attributeName = "title")
     public String getTitle() {
 
         return title;
@@ -32,7 +37,6 @@ public class OrderProducts {
         this.title = title;
     }
 
-    @DynamoDBAttribute(attributeName = "price")
     public String getPrice() {
         return price;
     }
@@ -42,7 +46,6 @@ public class OrderProducts {
         this.price = price;
     }
 
-    @DynamoDBAttribute(attributeName = "imageurl")
     public String getImageurl() {
 
         return imageurl;
