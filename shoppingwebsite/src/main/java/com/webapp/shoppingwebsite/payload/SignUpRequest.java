@@ -1,9 +1,9 @@
 package com.webapp.shoppingwebsite.payload;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
 import com.webapp.shoppingwebsite.validator.PasswordMatches;
 import lombok.Data;

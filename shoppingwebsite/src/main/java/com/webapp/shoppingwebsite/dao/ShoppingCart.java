@@ -3,7 +3,7 @@ package com.webapp.shoppingwebsite.dao;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

@@ -2,6 +2,7 @@ package com.webapp.shoppingwebsite.security;
 
 import com.webapp.shoppingwebsite.config.AppProperties;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -9,7 +10,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 import java.util.*;
 
@@ -30,9 +30,6 @@ public class TokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + appProperties.getAuth().getTokenExpirationMsec());
 
-        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(appProperties.getAuth().getTokenSecret());
-        Key signingKey = new SecretKeySpec(apiKeySecretBytes, SignatureAlgorithm.HS256.getJcaName());
-
         Map map = new HashMap<String,Object>();
         map.put("alg","HS256");
         map.put("typ","JWT");
@@ -49,16 +46,24 @@ public class TokenProvider {
                 .claim("ROLE",userPrincipal.getAuthorities().toString())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(signingKey,SignatureAlgorithm.HS256)
+                .signWith(getSigningKey(),SignatureAlgorithm.HS256)
                 .compact();
 
         logger.debug("Created JWT for userid: {}, expires at: {}", userPrincipal.getUserid(), expiryDate);
         return token;
     }
 
+    private Key getSigningKey() {
+        byte[] apiKeySecretBytes = Base64.getDecoder().decode(appProperties.getAuth().getTokenSecret());
+        return new SecretKeySpec(apiKeySecretBytes, SignatureAlgorithm.HS256.getJcaName());
+    }
+
+    private JwtParser getParser() {
+        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build();
+    }
+
     public String getUserIdFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(appProperties.getAuth().getTokenSecret())
+        Claims claims = getParser()
                 .parseClaimsJws(token)
                 .getBody();
 
@@ -67,7 +72,7 @@ public class TokenProvider {
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(appProperties.getAuth().getTokenSecret()).parseClaimsJws(authToken);
+            getParser().parseClaimsJws(authToken);
             return true;
         } catch (SignatureException ex) {
             logger.error("Invalid JWT signature");
