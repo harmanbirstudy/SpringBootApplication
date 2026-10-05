@@ -1,26 +1,28 @@
 spring:
-  resources:
-    static-locations: classpath:/static/
+  web:
+    resources:
+      static-locations: classpath:/static/
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/shoppingwebsite}
+    username: ${DB_USERNAME:shopping}
+    password: ${DB_PASSWORD:shopping}
+  jpa:
+    hibernate:
+      ddl-auto: update
   security:
     oauth2:
       client:
         registration:
           google:
-            clientId: 
-            clientSecret: 
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
             redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope:
               - email
               - profile
-amazon:
-  dynamodb:
-    endpoint: http://localhost:8000/
-  aws:
-    accesskey: 
-    secretkey: 
 app:
   auth:
-    tokenSecret: 
+    tokenSecret: ${APP_TOKEN_SECRET}
     tokenExpirationMsec: 864000000
   cors:
     allowedOrigins: http://localhost:4200 # Comma separated list of allowed origins
@@ -32,3 +34,10 @@ app:
     authorizedRedirectUris:
 #      - http://localhost:4200/login
 #      - http://localhost:8080/login
+logging:
+  level:
+    root: INFO
+    # Set to DEBUG to see request-level details (cart/order lookups, JWT auth per request)
+    com.webapp.shoppingwebsite: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

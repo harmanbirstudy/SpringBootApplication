@@ -8,15 +8,19 @@ import com.webapp.shoppingwebsite.dao.ShoppingCartResponse;
 import com.webapp.shoppingwebsite.payload.ShoppingCartRequest;
 import com.webapp.shoppingwebsite.repository.ProductsRepository;
 import com.webapp.shoppingwebsite.repository.ShoppingCartRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.*;
 
 @RestController
 @RequestMapping("/services/shoppingcart")
 public class ShoppingCartController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShoppingCartController.class);
 
     @Autowired
     private ShoppingCartRepository shoppingcartrepo;
@@ -26,6 +30,8 @@ public class ShoppingCartController {
 
     @PostMapping("/createorupdate")
     ShoppingCartResponse createOrUpdateCart(@Valid @RequestBody ShoppingCartRequest cartreuquest) {
+        logger.debug("Cart update request, cartid: {}, productid: {}, quantity: {}",
+                cartreuquest.getCartid(), cartreuquest.getProductid(), cartreuquest.getQuantity());
 
         if (!cartreuquest.getCartid().isBlank()) {
             Optional<ShoppingCart> cartOptional = shoppingcartrepo.findByCartid(cartreuquest.getCartid());
@@ -39,8 +45,10 @@ public class ShoppingCartController {
                     if (next.getKey().equalsIgnoreCase(cartreuquest.getProductid())) {
                         if (cartreuquest.getQuantity() <= 0) {
                             iterator.remove();
+                            logger.info("Removed productid: {} from cartid: {}", cartreuquest.getProductid(), cart.getCartid());
                         } else {
                             next.setValue(cartreuquest.getQuantity());
+                            logger.info("Updated productid: {} quantity to {} in cartid: {}", cartreuquest.getProductid(), cartreuquest.getQuantity(), cart.getCartid());
                         }
                         shoppingcartrepo.save(cart);
                         return populaterespose(cart);
@@ -50,15 +58,18 @@ public class ShoppingCartController {
                 }
                 itemsMap.put(cartreuquest.getProductid(), cartreuquest.getQuantity());
                 shoppingcartrepo.save(cart);
+                logger.info("Added productid: {} (quantity {}) to cartid: {}", cartreuquest.getProductid(), cartreuquest.getQuantity(), cart.getCartid());
 
                 return populaterespose(cart);
             }
+            logger.warn("Cart not found for cartid: {}", cartreuquest.getCartid());
         } else {
             ShoppingCart cart = new ShoppingCart();
             Map<String, Integer> itemsMap = new HashMap<>();
             itemsMap.put(cartreuquest.getProductid(), cartreuquest.getQuantity());
             cart.setItems(itemsMap);
             shoppingcartrepo.save(cart);
+            logger.info("Created new cartid: {} with productid: {}", cart.getCartid(), cartreuquest.getProductid());
             return populaterespose(cart);
         }
         return null;
@@ -84,6 +95,8 @@ public class ShoppingCartController {
                 productitem.setImageurl(products.getImageurl());
                 productitem.setQuantity(items.getValue());
                 productlist.add(productitem);
+            } else {
+                logger.warn("Product {} in cartid: {} no longer exists", items.getKey(), cart.getCartid());
             }
 
         }
@@ -100,6 +113,7 @@ public class ShoppingCartController {
                 return populaterespose(cart);
             }
         }
+        logger.warn("Cart not found for cartid: {}", cartid);
         return null;
     }
 
@@ -117,8 +131,10 @@ public class ShoppingCartController {
 
             }
             shoppingcartrepo.save(cart);
+            logger.info("Cleared cartid: {}", cartid);
             return populaterespose(cart);
         }
+        logger.warn("Clear cart failed, cart not found for cartid: {}", cartid);
         return null;
     }
 

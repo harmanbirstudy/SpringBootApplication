@@ -7,6 +7,8 @@ import com.webapp.shoppingwebsite.repository.UserRepository;
 import com.webapp.shoppingwebsite.security.UserPrincipal;
 import com.webapp.shoppingwebsite.security.oauth2.user.OAuth2UserInfo;
 import com.webapp.shoppingwebsite.security.oauth2.user.OAuth2UserInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
@@ -25,6 +27,8 @@ import java.util.Optional;
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(CustomOAuth2UserService.class);
+
     @Autowired
     private UserRepository userRepository;
 
@@ -35,8 +39,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         try {
             return processOAuth2User(oAuth2UserRequest, oAuth2User);
         } catch (AuthenticationException ex) {
+            logger.warn("OAuth2 authentication failed: {}", ex.getMessage());
             throw ex;
         } catch (Exception ex) {
+            logger.error("Unexpected error while processing OAuth2 user", ex);
             // Throwing an instance of AuthenticationException will trigger the OAuth2AuthenticationFailureHandler
             throw new InternalAuthenticationServiceException(ex.getMessage(), ex.getCause());
         }
@@ -44,7 +50,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private OAuth2User processOAuth2User(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(oAuth2UserRequest.getClientRegistration().getRegistrationId(), oAuth2User.getAttributes());
-        if(StringUtils.isEmpty(oAuth2UserInfo.getEmail())) {
+        logger.debug("Processing OAuth2 login from provider: {}", oAuth2UserRequest.getClientRegistration().getRegistrationId());
+        if(!StringUtils.hasText(oAuth2UserInfo.getEmail())) {
+            logger.warn("Email not returned by OAuth2 provider: {}", oAuth2UserRequest.getClientRegistration().getRegistrationId());
             throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
         }
 
@@ -53,6 +61,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if(userOptional.isPresent()) {
             user = userOptional.get();
             if(!user.getProvider().equals(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))) {
+                logger.warn("OAuth2 login rejected, {} is registered with provider {}", oAuth2UserInfo.getEmail(), user.getProvider());
                 throw new OAuth2AuthenticationProcessingException("Looks like you're signed up with " +
                         user.getProvider() + " account. Please use your " + user.getProvider() +
                         " account to login.");
@@ -79,13 +88,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         user.setCreateddate(new Date());
         user.setModifieddate(new Date());
         user.setEnabled(Boolean.TRUE);
-        return userRepository.save(user);
+        User result = userRepository.save(user);
+        logger.info("Registered new {} user, userid: {}", result.getProvider(), result.getUserid());
+        return result;
     }
 
     private User updateExistingUser(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
         existingUser.setName(oAuth2UserInfo.getName());
         existingUser.setImageUrl(oAuth2UserInfo.getImageUrl());
         existingUser.setModifieddate(new Date());
+        logger.info("Updating existing OAuth2 user, userid: {}", existingUser.getUserid());
         return userRepository.save(existingUser);
     }
 

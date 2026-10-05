@@ -5,6 +5,8 @@ import com.webapp.shoppingwebsite.dao.Products;
 import com.webapp.shoppingwebsite.dao.ShoppingCart;
 import com.webapp.shoppingwebsite.dao.ShoppingCartResponse;
 import com.webapp.shoppingwebsite.repository.ProductsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,8 @@ import java.util.List;
 @RequestMapping("/services/getproducts")
 public class ProductController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
+
     @Autowired
     private ProductsRepository products;
 
@@ -26,6 +30,7 @@ public class ProductController {
     public List<ProductResponse> getProductist() {
         List<Products> result = new ArrayList<Products>();
         products.findAll().forEach(result::add);
+        logger.debug("Returning {} products", result.size());
        // result.sort(Comparator.comparing(Products::getTitle));
         return populaterespose(result);
     }
