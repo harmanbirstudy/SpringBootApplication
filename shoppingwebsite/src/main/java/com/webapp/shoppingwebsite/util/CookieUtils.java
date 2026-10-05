@@ -1,5 +1,7 @@
 package com.webapp.shoppingwebsite.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.SerializationUtils;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -8,6 +10,8 @@ import java.util.Base64;
 import java.util.Optional;
 
 public class CookieUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(CookieUtils.class);
 
     public static Optional<Cookie> getCookie(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
@@ -51,7 +55,12 @@ public class CookieUtils {
     }
 
     public static <T> T deserialize(Cookie cookie, Class<T> cls) {
-        return cls.cast(SerializationUtils.deserialize(
-                Base64.getUrlDecoder().decode(cookie.getValue())));
+        try {
+            return cls.cast(SerializationUtils.deserialize(
+                    Base64.getUrlDecoder().decode(cookie.getValue())));
+        } catch (RuntimeException ex) {
+            logger.error("Failed to deserialize cookie: {}", cookie.getName(), ex);
+            throw ex;
+        }
     }
 }

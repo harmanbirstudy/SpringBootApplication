@@ -1,6 +1,8 @@
 package com.webapp.shoppingwebsite.security.oauth2;
 
 import com.webapp.shoppingwebsite.util.CookieUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -18,6 +20,8 @@ import static com.webapp.shoppingwebsite.security.oauth2.HttpCookieOAuth2Authori
 @Component
 public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2AuthenticationFailureHandler.class);
+
     @Autowired
     HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
@@ -33,6 +37,7 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
         httpCookieOAuth2AuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
 
+        logger.warn("OAuth2 authentication failed: {}. Redirecting to {}", exception.getMessage(), targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

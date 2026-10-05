@@ -6,6 +6,8 @@ import com.webapp.shoppingwebsite.exception.ResourceNotFoundException;
 import com.webapp.shoppingwebsite.repository.ProductCategoryRepository;
 import com.webapp.shoppingwebsite.security.CurrentUser;
 import com.webapp.shoppingwebsite.security.UserPrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/services/productcategory")
 public class ProductCategoryAdminController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductCategoryAdminController.class);
+
     @Autowired
     private ProductCategoryRepository productcategory;
 
@@ -26,6 +31,7 @@ public class ProductCategoryAdminController {
         List<ProductCategory> result = new ArrayList<ProductCategory>();
         productcategory.findAll(). forEach(result::add);
         result.sort(Comparator.comparing(ProductCategory::getType));
+        logger.debug("Returning {} product categories", result.size());
         return result;
     }
 }

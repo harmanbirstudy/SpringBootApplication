@@ -2,25 +2,75 @@
 
 Spring Boot shopping website backed by PostgreSQL (previously DynamoDB).
 
-## Google OAuth2 credentials (required)
+## Secrets (required)
 
-`src/main/resources/application.yml` has Google login configured:
+`src/main/resources/application.yml` contains no secrets. It reads them from environment
+variables when the app starts:
+
+| Environment variable   | Used for                               | Where to get it |
+|------------------------|----------------------------------------|-----------------|
+| `GOOGLE_CLIENT_ID`     | `spring.security.oauth2...google.clientId` | [Google Cloud Console](#getting-a-client-id-and-secret-from-google-cloud-console) |
+| `GOOGLE_CLIENT_SECRET` | `spring.security.oauth2...google.clientSecret` | [Google Cloud Console](#getting-a-client-id-and-secret-from-google-cloud-console) |
+| `APP_TOKEN_SECRET`     | `app.auth.tokenSecret` (signs JWT login tokens) | [Generate one](#jwt-token-secret) |
 
 ```yaml
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
           google:
-            clientId:
-            clientSecret:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
+...
+app:
+  auth:
+    tokenSecret: ${APP_TOKEN_SECRET}
 ```
 
-**`clientId` and `clientSecret` must not be empty.**
-- An empty `clientId` stops the app from starting, with
-  `Client id must not be empty.` This happens even if you only use email/password login.
-- An empty `clientSecret` lets the app start, but "Sign in with Google" fails when Google
+If any of them isn't set, the app fails to start with
+`Could not resolve placeholder 'GOOGLE_CLIENT_ID'` (or the name of the missing variable).
+The database settings (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`) work the same way, but have
+local defaults, so you don't need to set them for the Docker database below.
+
+### Setting the variables
+
+**Option 1: a local `.env` file (recommended).** Create `.env` next to `pom.xml`:
+
+```bash
+GOOGLE_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<your-client-secret>
+APP_TOKEN_SECRET=<output-of-openssl-rand-base64-32>
+```
+
+`.env` is in `.gitignore`, so it is never committed. Spring Boot 2.2 doesn't read `.env` files
+itself, so load it into your shell first:
+
+```bash
+set -a; source .env; set +a
+./mvnw spring-boot:run
+```
+
+`set -a` exports every variable the file sets. Without it, the app can't see them.
+
+**Option 2: export them directly** (add to `~/.zshrc` to keep them):
+
+```bash
+export GOOGLE_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
+export GOOGLE_CLIENT_SECRET=<your-client-secret>
+export APP_TOKEN_SECRET=<output-of-openssl-rand-base64-32>
+```
+
+**IntelliJ:** open **Run → Edit Configurations →** your Spring Boot app **→ Environment variables**
+and add `GOOGLE_CLIENT_ID=...;GOOGLE_CLIENT_SECRET=...;APP_TOKEN_SECRET=...`.
+Or install the **EnvFile** plugin and point it at `.env`.
+
+**Server, Docker or cloud host:** set the same three variables in its environment settings.
+
+Never put real values back into `application.yml`, and don't use them as placeholder defaults
+(`${GOOGLE_CLIENT_SECRET:real-value}`), because that file is committed.
+
+### Google OAuth2 credentials
+
+`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are needed even if you only use email/password login.
+- Without `GOOGLE_CLIENT_ID` the app doesn't start. If it is set to an empty value, startup fails with
+  `Client id must not be empty.`
+- With an empty `GOOGLE_CLIENT_SECRET` the app starts, but "Sign in with Google" fails when Google
   sends the user back to the app.
 
 ### Getting a client ID and secret from Google Cloud Console
@@ -49,26 +99,14 @@ spring:
    **Download JSON**. Google may not show the secret again later. If you lose it, add a
    new secret to the client.
 
-### Supplying the credentials
+Put the two values in `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (see
+[Setting the variables](#setting-the-variables)).
 
-Don't commit real secrets. Pass them as environment variables when running the app:
+### JWT token secret
 
-```bash
-export SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENTID=<your-client-id>.apps.googleusercontent.com
-export SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENTSECRET=<your-client-secret>
-./mvnw spring-boot:run
-```
-
-In IntelliJ, set the same variables in **Run → Edit Configurations → Environment variables**.
-
-Or, for local use only, fill in `clientId` / `clientSecret` in `application.yml` and
-don't commit that change.
-
-### JWT token secret (required)
-
-`app.auth.tokenSecret` in `application.yml` is also empty. It's the key `TokenProvider`
-uses to sign the app's JWT login tokens. If it's empty, the app still starts, but every
-login fails when a token is issued, with `java.lang.IllegalArgumentException: Empty key`.
+`APP_TOKEN_SECRET` is the key `TokenProvider` uses to sign the app's JWT login tokens.
+If it's set to an empty value, the app still starts, but every login fails when a token is
+issued, with `java.lang.IllegalArgumentException: Empty key`.
 
 It can be any random value, as long as it meets two rules:
 
@@ -94,11 +132,7 @@ openssl rand -base64 32
 Use `32`, not `64`. openssl splits longer output across two lines, which makes it easy to
 paste only half of the value.
 
-Then pass it as an environment variable (or set `tokenSecret` locally, without committing it):
-
-```bash
-export APP_AUTH_TOKENSECRET=<output-of-openssl>
-```
+Then put it in `APP_TOKEN_SECRET` (see [Setting the variables](#setting-the-variables)).
 
 Notes:
 - The same secret is used to sign tokens and to check them on later requests. If you change

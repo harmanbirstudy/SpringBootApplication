@@ -52,6 +52,7 @@ public class TokenProvider {
                 .signWith(signingKey,SignatureAlgorithm.HS256)
                 .compact();
 
+        logger.debug("Created JWT for userid: {}, expires at: {}", userPrincipal.getUserid(), expiryDate);
         return token;
     }
 
