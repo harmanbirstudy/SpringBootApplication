@@ -43,8 +43,11 @@ itself, so load it into your shell first:
 
 ```bash
 set -a; source .env; set +a
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
+
+When running from IntelliJ, add these variables under the run configuration's
+**Environment variables** instead.
 
 `set -a` exports every variable the file sets. Without it, the app can't see them.
 
