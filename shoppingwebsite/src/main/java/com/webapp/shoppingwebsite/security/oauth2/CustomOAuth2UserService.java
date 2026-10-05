@@ -51,7 +51,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private OAuth2User processOAuth2User(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(oAuth2UserRequest.getClientRegistration().getRegistrationId(), oAuth2User.getAttributes());
         logger.debug("Processing OAuth2 login from provider: {}", oAuth2UserRequest.getClientRegistration().getRegistrationId());
-        if(StringUtils.isEmpty(oAuth2UserInfo.getEmail())) {
+        if(!StringUtils.hasText(oAuth2UserInfo.getEmail())) {
             logger.warn("Email not returned by OAuth2 provider: {}", oAuth2UserRequest.getClientRegistration().getRegistrationId());
             throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
         }
