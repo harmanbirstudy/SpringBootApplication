@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:16
-    container_name: shoppingwebsite-postgres
     environment:
       POSTGRES_DB: shoppingwebsite
       POSTGRES_USER: shopping
@@ -22,7 +21,6 @@ services:
   # so re-running only fills in missing seed rows and never touches other data.
   seed:
     image: postgres:16
-    container_name: shoppingwebsite-seed
     profiles: ["seed"]
     depends_on:
       postgres:
@@ -35,4 +33,7 @@ services:
     restart: "no"
 
 volumes:
+  # Fixed name so other projects can share this database. DataSqlAnalysis mounts
+  # the same volume for its optional Postgres; port 5432 ensures only one runs.
   pgdata:
+    name: shoppingwebsite_pgdata

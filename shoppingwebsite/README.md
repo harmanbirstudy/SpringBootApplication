@@ -177,7 +177,7 @@ are left alone and only missing seed rows are inserted.
 Check the seed output with:
 
 ```bash
-docker logs shoppingwebsite-seed
+docker compose logs seed
 ```
 
 ### Stop / reset
@@ -185,6 +185,26 @@ docker logs shoppingwebsite-seed
 ```bash
 docker compose down                   # stop, keep data
 docker compose --profile seed down -v # stop and delete all data (fresh database next time)
+```
+
+### Sharing the database with DataSqlAnalysis
+
+The data volume is named `shoppingwebsite_pgdata` and is shared with the
+[DataSqlAnalysis](https://github.com/harmanbirstudy/DataSqlAnalysis) Text-to-SQL
+project, which also keeps its Langfuse database on this server. `down -v`
+deletes it for both projects.
+
+DataSqlAnalysis can also start the same Postgres itself (`docker-compose --profile db up`),
+on the same volume and port. Only one of the two can run at a time — port 5432
+makes sure of that, which matters because two servers on one data volume would
+corrupt it. If `docker compose up` fails with
+`Bind for 0.0.0.0:5432 failed: port is already allocated`, the DataSqlAnalysis
+Postgres is running. Either keep using it (same data), or stop it and start this one:
+
+```bash
+DSA=../../VSCodeRepository/DataSqlAnalysis   # where you cloned DataSqlAnalysis
+(cd "$DSA" && docker-compose --profile db stop postgres)
+docker compose up -d postgres
 ```
 
 ### Seed data
@@ -208,7 +228,7 @@ Logins (all users with provider `local`):
 ### Querying
 
 ```bash
-docker exec -it shoppingwebsite-postgres psql -U shopping -d shoppingwebsite
+docker compose exec postgres psql -U shopping -d shoppingwebsite
 ```
 
 ```sql
