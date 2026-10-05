@@ -4,7 +4,7 @@ Spring Boot shopping website backed by PostgreSQL (previously DynamoDB).
 
 ## Secrets (required)
 
-`src/main/resources/application.yml` contains no secrets. It reads them from environment
+`shoppingwebsite/src/main/resources/application.yml` contains no secrets. It reads them from environment
 variables when the app starts:
 
 | Environment variable   | Used for                               | Where to get it |
@@ -30,7 +30,7 @@ local defaults, so you don't need to set them for the Docker database below.
 
 ### Setting the variables
 
-**Option 1: a local `.env` file (recommended).** Create `.env` next to `pom.xml`:
+**Option 1: a local `.env` file (recommended).** Create `.env` next to `shoppingwebsite/pom.xml`:
 
 ```bash
 GOOGLE_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
@@ -143,7 +143,7 @@ Notes:
 
 ## Local database
 
-PostgreSQL 16 runs in Docker via `docker-compose.yml`.
+PostgreSQL 16 runs in Docker via `shoppingwebsite/docker-compose.yml`.
 
 | Setting  | Value             |
 |----------|-------------------|
@@ -167,7 +167,7 @@ The tables are created by Hibernate (`ddl-auto: update`) when the app starts.
 docker compose --profile seed up -d
 ```
 
-The `seed` service waits for Postgres to be healthy, runs `scripts/seed.sql`, and exits.
+The `seed` service waits for Postgres to be healthy, runs `shoppingwebsite/scripts/seed.sql`, and exits.
 It only runs when `--profile seed` is passed.
 
 `seed.sql` is safe to re-run: tables use `CREATE TABLE IF NOT EXISTS` and inserts use
