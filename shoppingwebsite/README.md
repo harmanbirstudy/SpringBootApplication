@@ -177,7 +177,7 @@ are left alone and only missing seed rows are inserted.
 Check the seed output with:
 
 ```bash
-docker logs shoppingwebsite-seed
+docker compose logs seed
 ```
 
 ### Stop / reset
@@ -186,6 +186,10 @@ docker logs shoppingwebsite-seed
 docker compose down                   # stop, keep data
 docker compose --profile seed down -v # stop and delete all data (fresh database next time)
 ```
+
+The data volume is named `shoppingwebsite_pgdata` and is shared with the
+DataSqlAnalysis project, which also keeps its Langfuse database on this server.
+`down -v` deletes it for both projects.
 
 ### Seed data
 
@@ -208,7 +212,7 @@ Logins (all users with provider `local`):
 ### Querying
 
 ```bash
-docker exec -it shoppingwebsite-postgres psql -U shopping -d shoppingwebsite
+docker compose exec postgres psql -U shopping -d shoppingwebsite
 ```
 
 ```sql
