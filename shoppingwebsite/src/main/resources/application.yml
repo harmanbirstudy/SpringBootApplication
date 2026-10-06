@@ -41,3 +41,7 @@ logging:
     com.webapp.shoppingwebsite: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+# Settings the Angular app reads at startup from GET /app-config, so they can change without rebuilding Angular
+frontend:
+  recommendationApiUrl: ${RECOMMENDATION_API_URL:http://localhost:3001/}
+  geoapifyApiKey: ${GEOAPIFY_API_KEY:}
