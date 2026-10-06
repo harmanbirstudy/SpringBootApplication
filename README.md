@@ -23,7 +23,19 @@ app:
     tokenSecret: ${APP_TOKEN_SECRET}
 ```
 
-If any of them isn't set, the app fails to start with
+Two optional variables configure the Angular front end. Spring Boot returns them from
+`GET /app-config` (`FrontendConfigController`), and the Angular app reads them when it starts,
+so they can change without rebuilding Angular:
+
+| Environment variable     | Used for                                 | Default |
+|--------------------------|------------------------------------------|---------|
+| `RECOMMENDATION_API_URL` | URL of the recommendations API (called from the browser) | `http://localhost:3001/` |
+| `GEOAPIFY_API_KEY`       | Fast address autocomplete on checkout ([geoapify.com](https://www.geoapify.com), free tier) | empty: the slower Photon API is used |
+
+`/app-config` is public, so only put values there that are safe to show in a browser.
+To change them, set the variables (in `.env`, IntelliJ, or `docker-compose.yml`) and restart Spring Boot.
+
+If any of the three required variables isn't set, the app fails to start with
 `Could not resolve placeholder 'GOOGLE_CLIENT_ID'` (or the name of the missing variable).
 The database settings (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`) work the same way, but have
 local defaults, so you don't need to set them for the Docker database below.

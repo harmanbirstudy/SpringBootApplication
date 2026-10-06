@@ -31,6 +31,9 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       APP_TOKEN_SECRET: ${APP_TOKEN_SECRET}
+      # read by the Angular app at startup via GET /app-config (see README)
+      RECOMMENDATION_API_URL: ${RECOMMENDATION_API_URL:-http://localhost:3001/}
+      GEOAPIFY_API_KEY: ${GEOAPIFY_API_KEY:-}
     ports:
       - "8080:8080"
 
