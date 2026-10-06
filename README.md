@@ -144,6 +144,22 @@ Notes:
   environment, keep it secret like a password, because anyone who has it can create valid
   login tokens for any user.
 
+## Running everything in Docker
+
+`shoppingwebsite/docker-compose.yml` also has an `app` service that builds the app from
+`shoppingwebsite/Dockerfile` and runs it on <http://localhost:8080>, after Postgres is healthy.
+Compose reads the secrets from `shoppingwebsite/.env` (see [Setting the variables](#setting-the-variables)),
+so you don't need to `source` it first.
+
+```bash
+docker compose up -d --build          # app + database (add --profile seed to load seed data)
+docker compose up -d postgres         # database only, run the app from IntelliJ / mvn
+docker compose logs -f app            # app logs
+```
+
+Add `--build` after code changes, otherwise Compose reuses the old image. Stop the `app`
+container (`docker compose stop app`) before running the app locally, since both use port 8080.
+
 ## Local database
 
 PostgreSQL 16 runs in Docker via `shoppingwebsite/docker-compose.yml`.
@@ -159,8 +175,11 @@ PostgreSQL 16 runs in Docker via `shoppingwebsite/docker-compose.yml`.
 ### Start the database (no seed data)
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 ```
+
+(`docker compose up -d` without a service name also starts the app, see
+[Running everything in Docker](#running-everything-in-docker).)
 
 The tables are created by Hibernate (`ddl-auto: update`) when the app starts.
 
